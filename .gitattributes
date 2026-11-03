@@ -1,0 +1,7 @@
+# Kept out of `git archive`, so the zip holds only what WordPress loads.
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.github export-ignore
+/stubs export-ignore
+/phpcs.xml.dist export-ignore
+/phpstan.neon.dist export-ignore

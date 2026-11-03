@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  zips:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The plugin zip is the repository minus everything marked export-ignore.
+      # The mu-plugin zip adds a loader, since WordPress loads no mu-plugin from a subdirectory.
+      - name: Build
+        run: |
+          mkdir -p build/mu
+          git archive --format=zip --prefix=yourmark-essentials/ -o build/yourmark-essentials.zip HEAD
+          cd build/mu
+          unzip -q ../yourmark-essentials.zip
+          printf '%s\n' '<?php' '/**' ' * Plugin Name: YourMark Essentials (loader)' ' * Description: Loads YourMark Essentials from its folder.' ' */' '' "require __DIR__ . '/yourmark-essentials/yourmark-essentials.php';" > yourmark-essentials-loader.php
+          zip -qr ../yourmark-essentials-mu.zip yourmark-essentials yourmark-essentials-loader.php
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" build/yourmark-essentials.zip build/yourmark-essentials-mu.zip --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md."

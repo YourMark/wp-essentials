@@ -1,0 +1,11 @@
+includes:
+	- vendor/yourmark/coding-standards/phpstan/wordpress.neon
+
+parameters:
+	phpVersion: 80200
+	paths:
+		- yourmark-essentials.php
+		- src
+	scanFiles:
+		# Yoast SEO and Two Factor are optional; only their signatures are needed.
+		- stubs/plugins.php

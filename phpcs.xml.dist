@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<ruleset name="YourMark Essentials">
+	<file>yourmark-essentials.php</file>
+	<file>src</file>
+
+	<rule ref="YourMark"/>
+
+	<config name="minimum_wp_version" value="6.7"/>
+	<config name="testVersion" value="8.2-"/>
+	<config name="text_domain" value="yourmark-essentials"/>
+</ruleset>
