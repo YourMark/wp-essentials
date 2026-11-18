@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.1.0
+
+Brings in what YourMark Hardening 1.2.0 added since.
+
+**Features**
+
+- Failed logins count per address and username, five within 15 minutes.
+- Sessions last 12 hours, or 7 days with "Remember Me", and only work in the browser that logged in.
+- With the Two Factor plugin active, administrators must set up two-factor authentication before using wp-admin, except on `local` and `development` environments. Replaces the dashboard reminder.
+- A mail goes out when someone becomes an administrator or super admin, and to the user when an application password is created.
+- The `X-Powered-By` header is removed.
+
+**Developer**
+
+- `yourmark/hardening/session_lifetime` and `yourmark/hardening/bind_session_to_browser` tune sessions.
+- `yourmark/hardening/two_factor_required` decides who needs two-factor authentication.
+
 ## 1.0.0
 
 Brings YourMark Hardening 1.1.0 and YourMark Cleanup 1.0.0 together in one package. Their filters keep their names.

@@ -8,7 +8,7 @@
 namespace YourMark\Essentials\Hardening;
 
 /**
- * Hides the WordPress version and turns off the admin's code editors.
+ * Hides the WordPress, PHP and framework versions and turns off the admin's code editors.
  *
  * The version stays in core's readme.html, a static file; remove it on deploy.
  */
@@ -25,10 +25,28 @@ final class Disclosure {
 		add_filter( 'script_loader_src', [ self::class, 'mask_version' ] );
 		add_filter( 'style_loader_src', [ self::class, 'mask_version' ] );
 
+		// PHP's own header, which names its version, then any a framework such as Acorn adds later.
+		if ( ! headers_sent() ) {
+			header_remove( 'X-Powered-By' );
+		}
+		add_filter( 'wp_headers', [ self::class, 'remove_powered_by' ], PHP_INT_MAX );
+
 		// An admin account taken over should not be one click from running PHP. A site that set it keeps its own value.
 		if ( ! defined( 'DISALLOW_FILE_EDIT' ) ) {
 			define( 'DISALLOW_FILE_EDIT', true );
 		}
+	}
+
+	/**
+	 * Drop X-Powered-By, which names the software and its version.
+	 *
+	 * @param array<string, string> $headers Response headers.
+	 * @return array<string, string>
+	 */
+	public static function remove_powered_by( array $headers ): array {
+		unset( $headers['X-Powered-By'] );
+
+		return $headers;
 	}
 
 	/**
