@@ -71,8 +71,9 @@ The repository is private. Give Composer a GitHub token with read access, then:
 ```
 
 It is a `wordpress-muplugin` and installs into `mu-plugins/yourmark-essentials/`.
-Bedrock's autoloader loads it from there; without Bedrock, add the loader from
-the mu-plugin zip below.
+WordPress loads no mu-plugin from a subdirectory by itself:
+[Bedrock](https://roots.io/bedrock/)'s autoloader does, and on any other
+Composer install `roots/bedrock-autoloader` does the same.
 
 ### Download
 
