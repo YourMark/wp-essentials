@@ -5,37 +5,45 @@ Everything is on as soon as it is installed; what differs per site is a filter.
 
 ## Hardening
 
-| Measure | Why |
-|---|---|
-| XML-RPC, pingbacks and trackbacks off, with their header and discovery link | Nothing current needs it, and one `system.multicall` request tries hundreds of passwords |
-| `?author=N`, the users sitemap, oEmbed and REST `wp/v2/users` no longer hand out usernames | A login name is half a credential. Logged-in users keep the REST route; the editor needs it |
-| One login error for a wrong username and a wrong password; lost password answers an unknown account as if the mail went out | Core tells them apart, which confirms that an account exists |
-| Five failed logins per address and username within 15 minutes lock that address out of that account for the rest of it | Per address alone would lock out everyone behind one proxy, per username alone would let anyone lock the real user out. See [Behind a proxy](#behind-a-proxy) |
-| Sessions last 12 hours, or 7 days with "Remember Me", and only work in the browser that logged in | Core gives 2 and 14 days and never checks the user agent it records. A stolen cookie in another browser counts as logged out; a browser update does not |
-| The options that move or open the site change only for a full administrator, WP-CLI or the installer; the default role never reads as administrator | A common plugin exploit turns registration on with administrator as the new users' role, then signs up |
-| Application passwords for administrators only | They skip two-step login by design |
-| Administrators must set up two-factor authentication, with the [Two Factor](https://wordpress.org/plugins/two-factor/) plugin active | Until they do, wp-admin sends them to their profile. Not on `local` or `development` environments (`WP_ENVIRONMENT_TYPE`). Does nothing without the plugin |
-| Mail when someone becomes an administrator or super admin, and to the user when an application password is created | Both outlast a password change, so they are how an attacker keeps access |
-| `Permissions-Policy` and a baseline `Content-Security-Policy` | No camera, microphone, location, payment, USB or Topics; no `<object>`, no foreign `<base>`, no framing by other sites |
-| No WordPress version in the head, feeds or core asset URLs; no `X-Powered-By`; `DISALLOW_FILE_EDIT` | `?ver=` becomes a hash, so caches still refresh on update. A site's own `DISALLOW_FILE_EDIT` wins |
-| Site Health tests for core's `readme.html` and for PHP running from uploads | Both are the server's or the deploy's to fix, so they are reported, not patched |
+- XML-RPC, pingbacks and trackbacks off, with their header and discovery link.
+- `?author=N`, the users sitemap, oEmbed and REST `wp/v2/users` no longer hand
+  out usernames. Logged-in users keep the REST route.
+- One login error for a wrong username and a wrong password; lost password
+  answers an unknown account as if the mail went out.
+- Five failed logins per address and username within 15 minutes lock that
+  address out of that account for the rest of the window. See
+  [Behind a proxy](#behind-a-proxy).
+- Sessions last 12 hours, or 7 days with "Remember Me", and only work in the
+  browser that logged in.
+- The options that move or open the site change only for a full administrator,
+  WP-CLI or the installer; the default role never reads as administrator.
+- Application passwords for administrators only.
+- Administrators must set up two-factor authentication with the
+  [Two Factor](https://wordpress.org/plugins/two-factor/) plugin; until they
+  do, wp-admin sends them to their profile. Not on `local` or `development`
+  environments, and nothing happens without the plugin.
+- Mail when someone becomes an administrator or super admin, and to the user
+  when an application password is created.
+- `Permissions-Policy` and a baseline `Content-Security-Policy`.
+- No WordPress version in the head, feeds or core asset URLs (`?ver=` becomes
+  a hash); no `X-Powered-By`; `DISALLOW_FILE_EDIT`, unless the site sets it.
+- Site Health tests for core's `readme.html` and for PHP running from uploads.
 
-The REST API stays open apart from the users route, so OAuth handshakes,
-oEmbed, forms and analytics keep working.
+The REST API stays open apart from the users route.
 
 ## Cleanup
 
-| Measure | Why |
-|---|---|
-| No emoji script, styles or TinyMCE plugin | The inline script can be a quarter of a logged-out page, to polyfill what browsers render natively |
-| No REST, oEmbed or shortlink discovery links, in the head or as `Link` headers | They point crawlers at duplicate URLs. The APIs themselves keep working |
-| No jQuery Migrate on the front end; jQuery and Gravity Forms' scripts in the footer | jQuery loads only where a script needs it, but blocked the first paint where it did. Logged-in editors keep core's behaviour |
-| robots.txt as one group with Yoast SEO | Yoast removes core's group only when WordPress sits in the web root |
-| No remote patterns, Openverse or block directory in the editor | Fewer requests on every editor load, no third-party images of unclear licence, no plugins installed from the inserter |
-| Ten revisions per post when the site set no limit | Unlimited revisions grow the posts table with every save |
-| Heartbeat every 60 seconds instead of 15 | Four requests a minute from every open admin tab is mostly noise |
-| Mail about automatic updates only when one failed | Clients get mail they cannot act on |
-| Feeds off, on request | For a site without a blog every feed is an empty page |
+- No emoji script, styles or TinyMCE plugin.
+- No REST, oEmbed or shortlink discovery links, in the head or as `Link`
+  headers. The APIs themselves keep working.
+- No jQuery Migrate on the front end; jQuery and Gravity Forms' scripts in the
+  footer. Logged-in editors keep core's behaviour.
+- robots.txt as one group with Yoast SEO.
+- No remote patterns, Openverse or block directory in the editor.
+- Ten revisions per post when the site set no limit.
+- Heartbeat every 60 seconds instead of 15.
+- Mail about automatic updates only when one failed.
+- Feeds off, on request.
 
 ## Client administrator
 
@@ -57,7 +65,7 @@ there the role mostly adds the user and option protection.
 
 ### Composer
 
-The repository is private. Give Composer a GitHub token with read access, then:
+Add the repository and require the package:
 
 ```json
 {
