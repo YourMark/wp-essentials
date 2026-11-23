@@ -11,12 +11,12 @@ use WP_Error;
 use WP_User;
 
 /**
- * Locks an IP address out of logging in after too many failed attempts.
+ * Locks an address out of an account after too many failed attempts.
  *
- * Ten failures within the window lock that address out for it, a correct
- * password included, so a guess that lands during the lockout gives nothing
- * away. Generous on purpose: behind a proxy nobody configured, every visitor
- * shares the proxy's address, and a lockout then hits real users too.
+ * Counted per address and username together: per address alone would lock out
+ * everyone behind one proxy, per username alone would let anyone lock the real
+ * user out. During the lockout a correct password is refused too, so a guess
+ * that lands then gives nothing away.
  *
  * The address is REMOTE_ADDR. Only when that is a proxy listed through the
  * trusted_proxies filter does X-Forwarded-For count, since anyone can send
@@ -25,9 +25,9 @@ use WP_User;
 final class LoginLimit {
 
 	/**
-	 * Failed attempts allowed per address within the window.
+	 * Failed attempts allowed per address and username within the window.
 	 */
-	private const ATTEMPTS = 10;
+	private const ATTEMPTS = 5;
 
 	/**
 	 * Seconds the window, and so the lockout, lasts.
@@ -46,20 +46,21 @@ final class LoginLimit {
 	 */
 	public static function register(): void {
 		// After core and Login's generic error, so nothing replaces the lockout.
-		add_filter( 'authenticate', [ self::class, 'refuse_when_locked' ], 100 );
+		add_filter( 'authenticate', [ self::class, 'refuse_when_locked' ], 100, 2 );
 		add_action( 'wp_login_failed', [ self::class, 'count_failure' ], 10, 2 );
-		add_action( 'wp_login', [ self::class, 'reset' ] );
+		add_action( 'wp_login', [ self::class, 'reset' ], 10, 2 );
 		add_filter( 'shake_error_codes', [ self::class, 'shake' ] );
 	}
 
 	/**
-	 * Refuse the attempt while the address is locked out.
+	 * Refuse the attempt while this address is locked out of this username.
 	 *
-	 * @param WP_User|WP_Error|null $user Result so far.
+	 * @param WP_User|WP_Error|null $user     Result so far.
+	 * @param mixed                 $username Username or email address as typed.
 	 * @return WP_User|WP_Error|null
 	 */
-	public static function refuse_when_locked( $user ) {
-		if ( self::failures() < self::attempts() ) {
+	public static function refuse_when_locked( $user, $username ) {
+		if ( ! is_string( $username ) || $username === '' || self::failures( $username ) < self::attempts() ) {
 			return $user;
 		}
 
@@ -81,20 +82,23 @@ final class LoginLimit {
 	 * @return void
 	 */
 	public static function count_failure( string $username, $error = null ): void {
-		if ( $error instanceof WP_Error && $error->get_error_code() === self::ERROR ) {
+		if ( $username === '' || ( $error instanceof WP_Error && $error->get_error_code() === self::ERROR ) ) {
 			return;
 		}
 
-		set_site_transient( self::key(), self::failures() + 1, self::window() );
+		set_site_transient( self::key( $username ), self::failures( $username ) + 1, self::window() );
 	}
 
 	/**
-	 * Clear the count once the address logs in.
+	 * Clear the count after a login, under both names the user may have typed.
 	 *
+	 * @param string  $user_login Username.
+	 * @param WP_User $user       User who logged in.
 	 * @return void
 	 */
-	public static function reset(): void {
-		delete_site_transient( self::key() );
+	public static function reset( string $user_login, WP_User $user ): void {
+		delete_site_transient( self::key( $user_login ) );
+		delete_site_transient( self::key( $user->user_email ) );
 	}
 
 	/**
@@ -110,21 +114,23 @@ final class LoginLimit {
 	}
 
 	/**
-	 * Failed attempts from this address within the window.
+	 * Failed attempts from this address for this username within the window.
 	 *
+	 * @param string $username Username or email address.
 	 * @return int
 	 */
-	private static function failures(): int {
-		return (int) get_site_transient( self::key() );
+	private static function failures( string $username ): int {
+		return (int) get_site_transient( self::key( $username ) );
 	}
 
 	/**
-	 * Transient key for this address. Site-wide on a network, which shares one login.
+	 * Transient key for this address and username. Site-wide on a network, which shares one login.
 	 *
+	 * @param string $username Username or email address.
 	 * @return string
 	 */
-	private static function key(): string {
-		return 'yourmark_login_' . md5( self::client_ip() );
+	private static function key( string $username ): string {
+		return 'yourmark_login_' . md5( self::client_ip() . '|' . strtolower( trim( $username ) ) );
 	}
 
 	/**
@@ -134,9 +140,9 @@ final class LoginLimit {
 	 */
 	private static function attempts(): int {
 		/**
-		 * Filters how many failed logins an address may make within the window.
+		 * Filters how many failed logins an address may make per username within the window.
 		 *
-		 * @param int $attempts Default 10.
+		 * @param int $attempts Default 5.
 		 */
 		return max( 1, (int) apply_filters( 'yourmark/hardening/login_attempts', self::ATTEMPTS ) );
 	}

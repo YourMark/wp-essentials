@@ -2,17 +2,33 @@
 
 ## 1.0.0
 
-Brings YourMark Hardening 1.1.0 and YourMark Cleanup 1.0.0 together in one package. Their filters keep their names.
+First release.
 
-**Features**
+**Hardening**
 
-- XML-RPC off; no usernames through `?author=N`, the users sitemap, oEmbed or REST; login and lost password confirm no account.
-- Failed logins are rate limited per address, with trusted proxies through a filter.
+- XML-RPC, pingbacks and trackbacks off.
+- No usernames through `?author=N`, the users sitemap, oEmbed or the REST users route.
+- The login and lost password forms confirm no account.
+- Five failed logins per address and username within 15 minutes lock that address out of the account; trusted proxies through a filter.
+- Sessions last 12 hours, or 7 days with "Remember Me", and only work in the browser that logged in.
+- With the Two Factor plugin active, administrators must set up two-factor authentication before using wp-admin, except on `local` and `development` environments.
+- Mail when someone becomes an administrator or super admin, and to the user when an application password is created.
 - The options that move or open the site change only for a full administrator, and the default role never reads as administrator.
-- Application passwords for administrators only, and a dashboard reminder to set up two-step login.
-- Permissions-Policy and a baseline Content-Security-Policy; no WordPress version; file editing off.
+- Application passwords for administrators only.
+- Permissions-Policy and a baseline Content-Security-Policy; no WordPress version or `X-Powered-By`; file editing off.
 - Site Health tests for core's `readme.html` and for PHP in uploads.
-- No emoji polyfill or discovery links; no jQuery Migrate, with jQuery and Gravity Forms' scripts in the footer; robots.txt as one group with Yoast SEO.
-- No remote patterns, Openverse or block directory in the editor; ten revisions when the site set no limit; a slower Heartbeat; update mail only on failure.
-- A client administrator role.
-- Dutch translation.
+
+**Cleanup**
+
+- No emoji polyfill or discovery links.
+- No jQuery Migrate on the front end; jQuery and Gravity Forms' scripts in the footer.
+- robots.txt as one group with Yoast SEO.
+- No remote patterns, Openverse or block directory in the editor.
+- Ten revisions when the site set no limit, a slower Heartbeat, update mail only on failure.
+- Feeds off, on request.
+
+**Client administrator**
+
+- A role that runs the site but cannot change what it runs on.
+
+Dutch translation included.

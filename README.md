@@ -10,12 +10,14 @@ Everything is on as soon as it is installed; what differs per site is a filter.
 | XML-RPC, pingbacks and trackbacks off, with their header and discovery link | Nothing current needs it, and one `system.multicall` request tries hundreds of passwords |
 | `?author=N`, the users sitemap, oEmbed and REST `wp/v2/users` no longer hand out usernames | A login name is half a credential. Logged-in users keep the REST route; the editor needs it |
 | One login error for a wrong username and a wrong password; lost password answers an unknown account as if the mail went out | Core tells them apart, which confirms that an account exists |
-| Ten failed logins per address within 15 minutes lock that address out for the rest of it | Brute force goes from thousands of guesses a minute to forty an hour. See [Behind a proxy](#behind-a-proxy) |
+| Five failed logins per address and username within 15 minutes lock that address out of that account for the rest of it | Per address alone would lock out everyone behind one proxy, per username alone would let anyone lock the real user out. See [Behind a proxy](#behind-a-proxy) |
+| Sessions last 12 hours, or 7 days with "Remember Me", and only work in the browser that logged in | Core gives 2 and 14 days and never checks the user agent it records. A stolen cookie in another browser counts as logged out; a browser update does not |
 | The options that move or open the site change only for a full administrator, WP-CLI or the installer; the default role never reads as administrator | A common plugin exploit turns registration on with administrator as the new users' role, then signs up |
 | Application passwords for administrators only | They skip two-step login by design |
-| A dashboard reminder to administrators without two-step login | With the Two Factor plugin active. A reminder, not a requirement: a locked-out client is a support call |
+| Administrators must set up two-factor authentication, with the [Two Factor](https://wordpress.org/plugins/two-factor/) plugin active | Until they do, wp-admin sends them to their profile. Not on `local` or `development` environments (`WP_ENVIRONMENT_TYPE`). Does nothing without the plugin |
+| Mail when someone becomes an administrator or super admin, and to the user when an application password is created | Both outlast a password change, so they are how an attacker keeps access |
 | `Permissions-Policy` and a baseline `Content-Security-Policy` | No camera, microphone, location, payment, USB or Topics; no `<object>`, no foreign `<base>`, no framing by other sites |
-| No WordPress version in the head, feeds or core asset URLs; `DISALLOW_FILE_EDIT` | `?ver=` becomes a hash, so caches still refresh on update. A site's own `DISALLOW_FILE_EDIT` wins |
+| No WordPress version in the head, feeds or core asset URLs; no `X-Powered-By`; `DISALLOW_FILE_EDIT` | `?ver=` becomes a hash, so caches still refresh on update. A site's own `DISALLOW_FILE_EDIT` wins |
 | Site Health tests for core's `readme.html` and for PHP running from uploads | Both are the server's or the deploy's to fix, so they are reported, not patched |
 
 The REST API stays open apart from the users route, so OAuth handshakes,
@@ -69,8 +71,9 @@ The repository is private. Give Composer a GitHub token with read access, then:
 ```
 
 It is a `wordpress-muplugin` and installs into `mu-plugins/yourmark-essentials/`.
-Bedrock's autoloader loads it from there; without Bedrock, add the loader from
-the mu-plugin zip below.
+WordPress loads no mu-plugin from a subdirectory by itself:
+[Bedrock](https://roots.io/bedrock/)'s autoloader does, and on any other
+Composer install `roots/bedrock-autoloader` does the same.
 
 ### Download
 
@@ -127,6 +130,25 @@ policy filter to send no header, for instance when the host sends one.
 ```php
 add_filter( 'yourmark/hardening/login_attempts', fn (): int => 5 );
 add_filter( 'yourmark/hardening/login_window', fn (): int => HOUR_IN_SECONDS );
+
+// Session length in seconds; $remember is whether "Remember Me" was ticked.
+add_filter( 'yourmark/hardening/session_lifetime', fn ( int $seconds, bool $remember ): int => $remember ? 30 * DAY_IN_SECONDS : DAY_IN_SECONDS, 10, 2 );
+
+// For users whose browser changes its user agent mid-session.
+add_filter( 'yourmark/hardening/bind_session_to_browser', '__return_false' );
+```
+
+A site with its own session store, set through `session_token_manager`, keeps it.
+
+### Two-factor authentication
+
+Required for anyone who can manage options, except when `WP_ENVIRONMENT_TYPE`
+is `local` or `development`. Install Two Factor before an administrator logs
+in: with the plugin, every administrator without it is sent to set it up.
+
+```php
+// Require it for editors as well.
+add_filter( 'yourmark/hardening/two_factor_required', fn ( bool $required, WP_User $user ): bool => $required || user_can( $user, 'edit_others_posts' ), 10, 2 );
 ```
 
 #### Behind a proxy
