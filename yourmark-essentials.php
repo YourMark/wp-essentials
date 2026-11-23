@@ -2,7 +2,7 @@
 /**
  * Plugin Name: YourMark Essentials
  * Description: Hardening, cleanup and a client administrator role for every client site.
- * Version: 1.1.0
+ * Version: 1.0.0
  * Requires at least: 6.7
  * Requires PHP: 8.2
  * Author: YourMark
@@ -26,7 +26,7 @@ if ( defined( 'YOURMARK_ESSENTIALS_VERSION' ) ) {
 	return;
 }
 
-define( 'YOURMARK_ESSENTIALS_VERSION', '1.1.0' );
+define( 'YOURMARK_ESSENTIALS_VERSION', '1.0.0' );
 
 foreach ( [
 	'Hardening/XmlRpc',

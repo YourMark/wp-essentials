@@ -143,9 +143,8 @@ A site with its own session store, set through `session_token_manager`, keeps it
 ### Two-factor authentication
 
 Required for anyone who can manage options, except when `WP_ENVIRONMENT_TYPE`
-is `local` or `development`. Install Two Factor before the first administrator
-logs in after updating to 1.1: with the plugin, every administrator without it
-is sent to set it up.
+is `local` or `development`. Install Two Factor before an administrator logs
+in: with the plugin, every administrator without it is sent to set it up.
 
 ```php
 // Require it for editors as well.
