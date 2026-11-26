@@ -36,6 +36,7 @@ The REST API stays open apart from the users route.
 - No emoji script, styles or TinyMCE plugin.
 - No REST, oEmbed or shortlink discovery links, in the head or as `Link`
   headers. The APIs themselves keep working.
+- No redirect to random content (WordPress 7.2).
 - No jQuery Migrate on the front end; jQuery and Gravity Forms' scripts in the
   footer. Logged-in editors keep core's behaviour.
 - robots.txt as one group with Yoast SEO.
@@ -99,6 +100,9 @@ Installed both ways, it loads once. A zip install does not update itself.
 ### REST API
 
 ```php
+// Open the users route to visitors, for a site that needs it public.
+add_filter( 'yourmark/hardening/rest_public_users', '__return_true' );
+
 // Close more routes to visitors. A route closes everything below it.
 add_filter( 'yourmark/hardening/rest_private_routes', function ( array $routes ): array {
 	$routes[] = '/wp/v2/media';

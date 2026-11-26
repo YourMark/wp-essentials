@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0
+
+**Hardening**
+
+- `yourmark/hardening/rest_public_users` opens the REST users route to visitors.
+
+**Cleanup**
+
+- No redirect to random content, which WordPress 7.2 adds.
+
 ## 1.0.0
 
 First release.
