@@ -1,6 +1,6 @@
 <?php
 /**
- * Discovery links in the head and headers.
+ * Discovery links and URLs that only lead crawlers on.
  *
  * @package YourMark\Essentials
  */
@@ -8,7 +8,8 @@
 namespace YourMark\Essentials\Cleanup;
 
 /**
- * Drops the REST, oEmbed and shortlink discovery links, in the head and as headers.
+ * Drops the REST, oEmbed and shortlink discovery links, in the head and as headers,
+ * and WordPress 7.2's redirect to random content.
  *
  * They only point crawlers at duplicate URLs of the same page. The REST API and
  * oEmbed themselves keep working; the block editor and embeds need them.
@@ -22,6 +23,7 @@ final class Head {
 	 */
 	public static function register(): void {
 		add_action( 'init', [ self::class, 'remove_links' ] );
+		add_filter( 'wp_enable_random_content_redirect', '__return_false' );
 	}
 
 	/**

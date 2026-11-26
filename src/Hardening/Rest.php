@@ -21,11 +21,9 @@ use WP_REST_Server;
 final class Rest {
 
 	/**
-	 * Routes closed to visitors by default, with everything below them.
-	 *
-	 * The users route lists every author with their login slug.
+	 * Lists every author with their login slug.
 	 */
-	private const PRIVATE_ROUTES = [ '/wp/v2/users' ];
+	private const USERS_ROUTE = '/wp/v2/users';
 
 	/**
 	 * Hook in.
@@ -73,11 +71,18 @@ final class Rest {
 	 */
 	private static function is_private( string $route ): bool {
 		/**
+		 * Filters whether visitors may read the users route.
+		 *
+		 * @param bool $public Default false.
+		 */
+		$users_public = (bool) apply_filters( 'yourmark/hardening/rest_public_users', false );
+
+		/**
 		 * Filters the routes closed to visitors. Each closes everything below it too.
 		 *
 		 * @param string[] $routes Routes, such as /wp/v2/users.
 		 */
-		$routes = (array) apply_filters( 'yourmark/hardening/rest_private_routes', self::PRIVATE_ROUTES );
+		$routes = (array) apply_filters( 'yourmark/hardening/rest_private_routes', $users_public ? [] : [ self::USERS_ROUTE ] );
 
 		foreach ( $routes as $private ) {
 			if ( self::within( $route, (string) $private ) ) {
