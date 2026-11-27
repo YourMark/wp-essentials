@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+**Hardening**
+
+- No `browsing-topics` in the Permissions-Policy: Chrome dropped the Topics API and warns about the unknown feature.
+
 ## 1.1.0
 
 **Hardening**

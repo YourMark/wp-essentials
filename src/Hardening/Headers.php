@@ -21,12 +21,11 @@ final class Headers {
 	 * embedded script can ask for them either.
 	 */
 	private const PERMISSIONS_POLICY = [
-		'camera'          => '()',
-		'microphone'      => '()',
-		'geolocation'     => '()',
-		'payment'         => '()',
-		'usb'             => '()',
-		'browsing-topics' => '()',
+		'camera'      => '()',
+		'microphone'  => '()',
+		'geolocation' => '()',
+		'payment'     => '()',
+		'usb'         => '()',
 	];
 
 	/**
